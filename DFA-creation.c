@@ -96,7 +96,7 @@ int main()
   }
   else
   {
-   printf("%s is not accpeted. ",string);
+   printf("%s is not accepted. ",string);
   }
  }while(1); 
  
