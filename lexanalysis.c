@@ -123,7 +123,7 @@ int main() {
                 lexeme[j++] = input[++i];
                 lexeme[j] = '\0';
                 strcpy(tokens[k++], lexeme);
-                printToken(lexeme, "Operator: Logical AND");
+                printToken(lexeme, "Logical Operator: AND");
                 j = 0;
                 memset(lexeme, 0, sizeof(lexeme));
             }
@@ -131,7 +131,7 @@ int main() {
                 lexeme[j++] = input[++i];
                 lexeme[j] = '\0';
                 strcpy(tokens[k++], lexeme);
-                printToken(lexeme, "Operator: Logical OR");
+                printToken(lexeme, "Logical Operator: OR");
                 j = 0;
                 memset(lexeme, 0, sizeof(lexeme));
             }
