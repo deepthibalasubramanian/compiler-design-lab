@@ -3,27 +3,27 @@
 #include <string.h>
 
 int main() {
-    int n, s, f, i, j, c, l, u, t, k = 0;
+    int n, s, f, i, j, c, l, u, t;
     char dfa[10][10], node[10], in[10], final[10], string1[15], choice;
 
     do {
-        printf("Enter number of nodes: ");
+        printf("Enter number of state: ");
         scanf("%d", &n);
-        printf("Enter number of states: ");
+        printf("Enter number of input symbols: ");
         scanf("%d", &s);
-        printf("Enter number of final states: ");
+        printf("Enter number of final nodes: ");
         scanf("%d", &f);
         char z;
         scanf("%c", &z);
 
         for (int i = 0; i < n; i++) {
-            printf("Enter value of node %d: ", i);
+            printf("Enter value of state %d: ", i);
             scanf(" %c", &node[i]);
             scanf("%c", &z);
         }
 
         for (int i = 0; i < s; i++) {
-            printf("Enter the state %d: ", i);
+            printf("Enter the symbol %d: ", i);
             scanf(" %c", &in[i]);
             scanf("%c", &z);
         }
@@ -64,6 +64,7 @@ int main() {
             scanf("%s", string1);
             c = dfa[1][0];
             l = strlen(string1);
+            int k = 0; // Reset k to zero for each new string
 
             for (i = 0; i < l; i++) {
                 printf("(%c,%c)->", c, string1[i]);
@@ -76,6 +77,7 @@ int main() {
 
                 if (j == n) {
                     printf("\nInvalid input: Character not found in transition table.\n");
+                    printf("String is rejected.\n");
                     break;
                 }
 
@@ -88,6 +90,7 @@ int main() {
 
                 if (j == s) {
                     printf("\nInvalid input: Character not found in transition table.\n");
+                    printf("String is rejected.\n");
                     break;
                 }
 
