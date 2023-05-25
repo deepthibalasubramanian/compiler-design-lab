@@ -7,23 +7,23 @@ int main() {
     char dfa[10][10], node[10], in[10], final[10], string1[15], choice;
 
     do {
-        printf("Enter number of nodes: ");
+        printf("Enter number of state: ");
         scanf("%d", &n);
-        printf("Enter number of states: ");
+        printf("Enter number of input symbols: ");
         scanf("%d", &s);
-        printf("Enter number of final states: ");
+        printf("Enter number of final nodes: ");
         scanf("%d", &f);
         char z;
         scanf("%c", &z);
 
         for (int i = 0; i < n; i++) {
-            printf("Enter value of node %d: ", i);
+            printf("Enter value of state %d: ", i);
             scanf(" %c", &node[i]);
             scanf("%c", &z);
         }
 
         for (int i = 0; i < s; i++) {
-            printf("Enter the state %d: ", i);
+            printf("Enter the symbol %d: ", i);
             scanf(" %c", &in[i]);
             scanf("%c", &z);
         }
