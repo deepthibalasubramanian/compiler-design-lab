@@ -105,8 +105,14 @@ int main() {
                 printToken(lexeme, "Arithmetic Operator: Multiplication");
             else if (input[i] == '/')
                 printToken(lexeme, "Arithmetic Operator: Division");
-            else if (input[i] == '%')
-                printToken(lexeme, "Arithmetic Operator: Modulus");
+            else if (input[i] == '%'){
+                if (input[i+1] == 'd' || input[i+1] == 's' || input[i+1] == 'c' || input[i+1] == 'f')
+                    {printToken(lexeme, "Format specifier");
+                     }
+                else
+                    printToken(lexeme, "Arithmetic Operator: Modulus");
+            }
+                
             else if (input[i] == '<')
                 printToken(lexeme, "Relational Operator: Less Than");
             else if (input[i] == '>')
