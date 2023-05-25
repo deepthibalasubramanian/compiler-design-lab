@@ -5,7 +5,7 @@
 
 #define MAX_TOKENS 100
 #define MAX_IDENTIFIERS 100
-#define MAX_KEYWORDS 32
+#define MAX_KEYWORDS 35
 
 int isKeyword(char buffer[]) {
     char keywords[MAX_KEYWORDS][15] = {
