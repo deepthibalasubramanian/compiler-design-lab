@@ -32,7 +32,7 @@ int isKeyword(char* lexeme) {
 }
 
 int isSeparator(char c) {
-    char separators[] = {',', ';', ':', '.', '!', '?', '"', '\'', '`'};
+    char separators[] = {',', ';', ':', '.', '?', '"', '\'', '`'};
 
     int numSeparators = sizeof(separators) / sizeof(separators[0]);
 
@@ -61,9 +61,11 @@ int isOperator(char* lexeme) {
     int numAssignmentOperators = sizeof(assignmentOperators) / sizeof(assignmentOperators[0]);
 
     for (int i = 0; i < numArithmeticOperators; i++) {
-        if (strcmp(lexeme, arithmeticOperators[i]) == 0)
-            return 1; // It's an arithmetic operator
-    }
+        if (strcmp(lexeme, arithmeticOperators[i]) == 0){
+            if (strlen(lexeme) == 2 && lexeme[1] == "=")
+                return 8; // It's an arithmetic operator
+            return 1;
+    }}
 
     for (int i = 0; i < numLogicalOperators; i++) {
         if (strcmp(lexeme, logicalOperators[i]) == 0)
@@ -96,6 +98,7 @@ int isOperator(char* lexeme) {
 
     return 0; // It's not an operator
 }
+
 
 void printTokens(Token tokens[], int numTokens) {
     printf("Serial No.\tLexeme\t\tType\n");
@@ -146,21 +149,30 @@ int main() {
                 } else if (token[i] == '(' || token[i] == ')') {
                     tokens[numTokens].lexeme[0] = token[i];
                     tokens[numTokens].lexeme[1] = '\0';
-                    strcpy(tokens[numTokens].type, "Parenthesis");
+                    if (token[i]=='('){
+                    strcpy(tokens[numTokens].type, "Left Parenthesis");}
+                    else{
+                    strcpy(tokens[numTokens].type, "Right Parenthesis");}
                     tokens[numTokens].serialNumber = numTokens + 1;
                     numTokens++;
                     i++;
                 } else if (token[i] == '[' || token[i] == ']') {
                     tokens[numTokens].lexeme[0] = token[i];
                     tokens[numTokens].lexeme[1] = '\0';
-                    strcpy(tokens[numTokens].type, "Angle Brace");
+                    if (token[i]=='[')
+                    strcpy(tokens[numTokens].type, "Left Angle Brace");
+                    else
+                    strcpy(tokens[numTokens].type, "Right Angle Brace");
                     tokens[numTokens].serialNumber = numTokens + 1;
                     numTokens++;
                     i++;
                 } else if (token[i] == '{' || token[i] == '}') {
                     tokens[numTokens].lexeme[0] = token[i];
                     tokens[numTokens].lexeme[1] = '\0';
-                    strcpy(tokens[numTokens].type, "Curly Brace");
+                    if (token[i]=='{')
+                    strcpy(tokens[numTokens].type, "Left Curly Brace");
+                    else
+                    strcpy(tokens[numTokens].type, "Right Curly Brace");
                     tokens[numTokens].serialNumber = numTokens + 1;
                     numTokens++;
                     i++;
