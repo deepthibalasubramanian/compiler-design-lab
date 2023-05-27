@@ -231,6 +231,30 @@ while (i < inputLength) {
         i = j;  // Move to the next character
         continue;
     }
+            // Check for headers
+        if (currentChar == '<') {
+            int j = i + 1;
+            while (j < inputLength && input[j] != '>') {
+                j++;
+            }
+
+            if (j < inputLength) {
+                int lexemeLength = j - i + 1;
+                char lexeme[lexemeLength + 1];
+                strncpy(lexeme, &input[i], lexemeLength);
+                lexeme[lexemeLength] = '\0';
+
+                Token t;
+                t.serialNumber = tokenCount + 1;
+                strcpy(t.lexeme, lexeme);
+                t.type = HEADER;
+                tokens[tokenCount] = t;
+                tokenCount++;
+
+                i = j + 1;  // Move to the next character
+                continue;
+            }
+        }
     // Check for separators
     if (strchr(",;.:?!'()[]{}", currentChar) != NULL) {
         Token t;
