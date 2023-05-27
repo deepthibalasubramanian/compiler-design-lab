@@ -43,23 +43,11 @@ int classifyToken(char* token) {
     }
 
     // Check for separators
-    char separators[] = { ',', ';', '.', ':', '?', '\'', '\"' };
+    char separators[] = { ',', ';', '.', ':', '?', '\'', '\"', '(', ')', '[', ']', '{', '}' };
     int numSeparators = sizeof(separators) / sizeof(separators[0]);
     for (int i = 0; i < numSeparators; i++) {
-        if (token[0] == separators[i]){
-            if (strcmp(token, "?:") == 0)
-                return OPERATOR;
+        if (token[0] == separators[i]) {
             return SEPARATOR;
-        }
-    }
-
-    // Check for parentheses, braces, and brackets
-    if (strlen(token) == 1) {
-        char brackets[] = { '(', ')', '[', ']', '{', '}' };
-        int numBrackets = sizeof(brackets) / sizeof(brackets[0]);
-        for (int i = 0; i < numBrackets; i++) {
-            if (token[0] == brackets[i])
-                return SEPARATOR;
         }
     }
 
@@ -95,10 +83,27 @@ int classifyToken(char* token) {
             return OPERATOR;
     }
 
-    // Default classification
+    // Check for ternary operator
+    if (strcmp(token, "?:") == 0)
+        return OPERATOR;
+
+    // Check for literal constants
+    int isLiteral = 1;
+    for (int i = 0; i < strlen(token); i++) {
+        if (!isdigit(token[i])) {
+            isLiteral = 0;
+            break;
+        }
+    }
+    if (isLiteral)
+        return LITERAL;
+
+    // Default classification is identifier
     return IDENTIFIER;
 }
 
+
+    
 // Function to get the type of operator
 char* getOperatorType(char* token) {
     // Check for arithmetic operators
@@ -184,11 +189,11 @@ char* getSeparatorType(char* token) {
 }
 
 int main() {
-    char input[100];
+    char input[500];
     printf("Enter the input: ");
     fgets(input, sizeof(input), stdin);
-    input[strcspn(input, "\n")] = '\0';  // Remove trailing newline
-    
+
+    // Tokenize input
     // Tokenize input
 int inputLength = strlen(input);
 int tokenCount = 0;
@@ -204,7 +209,28 @@ while (i < inputLength) {
         i++;  // Move to the next character
         continue;
     }
+    // Check for preprocessor directive
+    if (currentChar == '#') {
+        int j = i + 1;
+        while (j < inputLength && !isspace(input[j])) {
+            j++;
+        }
 
+        int lexemeLength = j - i;
+        char lexeme[lexemeLength + 1];
+        strncpy(lexeme, &input[i], lexemeLength);
+        lexeme[lexemeLength] = '\0';
+
+        Token t;
+        t.serialNumber = tokenCount + 1;
+        strcpy(t.lexeme, lexeme);
+        t.type = classifyToken(lexeme);
+        tokens[tokenCount] = t;
+        tokenCount++;
+
+        i = j;  // Move to the next character
+        continue;
+    }
     // Check for separators
     if (strchr(",;.:?!'()[]{}", currentChar) != NULL) {
         Token t;
@@ -228,7 +254,7 @@ while (i < inputLength) {
         if (j == inputLength) {
             // Unterminated string literal error
             printf("Unterminated string literal.\n");
-            return ;
+            return;
         }
 
         int lexemeLength = j - i + 1;
@@ -319,7 +345,6 @@ while (i < inputLength) {
     // Move to the next character if none of the above conditions are satisfied
     i++;
 }
-
     // Print the tokens with their classification
     printf("\n--- Token Classification ---\n");
     printf("Serial No.\tLexeme\t\tToken Type\n");
@@ -344,10 +369,10 @@ while (i < inputLength) {
                 printf("Literal\n");
                 break;
             case OPERATOR:
-                printf("Operator %s\n", getOperatorType(t.lexeme));
+                printf("Operator - %s\n", getOperatorType(t.lexeme));
                 break;
             case SEPARATOR:
-                printf("Separator %s\n", getSeparatorType(t.lexeme));
+                printf("Separator (%s)\n", getSeparatorType(t.lexeme));
                 break;
             default:
                 printf("Unknown\n");
