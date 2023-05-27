@@ -3,266 +3,238 @@
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_TOKENS 100
-#define MAX_LENGTH 100
+// Constants for token types
+#define KEYWORD 1
+#define IDENTIFIER 2
+#define LITERAL 3
+#define OPERATOR 4
+#define SEPARATOR 5
 
+// Structure to hold token information
 typedef struct {
     int serialNumber;
-    char lexeme[MAX_LENGTH];
-    char type[MAX_LENGTH];
+    char lexeme[50];
+    int type;
 } Token;
 
-int isKeyword(char* lexeme) {
-    char keywords[][20] = {
-        "auto", "break", "case", "char", "const", "continue", "default",
-        "do", "double", "else", "enum", "extern", "float", "for", "goto",
-        "if", "int", "long", "register", "return", "short", "signed", "sizeof",
-        "static", "struct", "switch", "typedef", "union", "unsigned", "void",
-        "volatile", "while"
+// Function to classify tokens
+int classifyToken(char* token) {
+    // Check for preprocessor directive
+    if (strcmp(token, "#include") == 0 || strcmp(token, "#define") == 0)
+        return KEYWORD;
+
+    // Check for headers
+    if (token[0] == '<' && token[strlen(token) - 1] == '>')
+        return KEYWORD;
+
+    // Check for keywords
+    char* keywords[] = {
+        "auto", "break", "case", "char", "const", "continue", "default", "do",
+        "double", "else", "enum", "extern", "float", "for", "goto", "if",
+        "int", "long", "register", "return", "short", "signed", "sizeof", "static",
+        "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while"
     };
-
     int numKeywords = sizeof(keywords) / sizeof(keywords[0]);
-
     for (int i = 0; i < numKeywords; i++) {
-        if (strcmp(lexeme, keywords[i]) == 0)
-            return 1; // It's a keyword
+        if (strcmp(token, keywords[i]) == 0)
+            return KEYWORD;
     }
 
-    return 0; // It's not a keyword
-}
-
-int isSeparator(char c) {
-    char separators[] = {',', ';', ':', '.', '?', '"', '\'', '`'};
-
+    // Check for separators
+    char separators[] = { ',', ';', '.', ':', '\'', '\"' };
     int numSeparators = sizeof(separators) / sizeof(separators[0]);
-
     for (int i = 0; i < numSeparators; i++) {
-        if (c == separators[i])
-            return 1; // It's a separator
+        if (token[0] == separators[i])
+            return SEPARATOR;
     }
 
-    return 0; // It's not a separator
+    // Check for parentheses, braces, and brackets
+    if (strlen(token) == 1) {
+        char brackets[] = { '(', ')', '[', ']', '{', '}' };
+        int numBrackets = sizeof(brackets) / sizeof(brackets[0]);
+        for (int i = 0; i < numBrackets; i++) {
+            if (token[0] == brackets[i])
+                return SEPARATOR;
+        }
+    }
+
+    // Check for arithmetic operators
+    char arithmeticOps[] = { '+', '-', '*', '/', '%' };
+    int numArithmeticOps = sizeof(arithmeticOps) / sizeof(arithmeticOps[0]);
+    for (int i = 0; i < numArithmeticOps; i++) {
+        if (token[0] == arithmeticOps[i])
+            return OPERATOR;
+    }
+
+    // Check for logical operators
+    char* logicalOps[] = { "||", "&&", "!" };
+    int numLogicalOps = sizeof(logicalOps) / sizeof(logicalOps[0]);
+    for (int i = 0; i < numLogicalOps; i++) {
+        if (strcmp(token, logicalOps[i]) == 0)
+            return OPERATOR;
+    }
+
+    // Check for unary operators
+    char* unaryOps[] = { "|", "&" };
+    int numUnaryOps = sizeof(unaryOps) / sizeof(unaryOps[0]);
+    for (int i = 0; i < numUnaryOps; i++) {
+        if (strcmp(token, unaryOps[i]) == 0)
+            return OPERATOR;
+    }
+
+    // Check for ternary operator
+    if (strcmp(token, "?:") == 0)
+        return OPERATOR;
+
+    // Check for relational operators
+    char* relationalOps[] = { ">", "<", ">=", "<=", "!=", "==" };
+    int numRelationalOps = sizeof(relationalOps) / sizeof(relationalOps[0]);
+    for (int i = 0; i < numRelationalOps; i++) {
+        if (strcmp(token, relationalOps[i]) == 0)
+            return OPERATOR;
+    }
+
+    // Check for assignment operators
+    char* assignmentOps[] = { "=", "+=", "-=", "*=", "/=", "%=" };
+    int numAssignmentOps = sizeof(assignmentOps) / sizeof(assignmentOps[0]);
+    for (int i = 0; i < numAssignmentOps; i++) {
+        if (strcmp(token, assignmentOps[i]) == 0)
+            return OPERATOR;
+    }
+
+    // Check for literal constants
+    int isLiteral = 1;
+    for (int i = 0; i < strlen(token); i++) {
+        if (!isdigit(token[i])) {
+            isLiteral = 0;
+            break;
+        }
+    }
+    if (isLiteral)
+        return LITERAL;
+
+    // Check for identifiers
+    int isIdentifier = isalpha(token[0]) || token[0] == '_';
+    for (int i = 1; i < strlen(token); i++) {
+        if (!isalnum(token[i]) && token[i] != '_') {
+            isIdentifier = 0;
+            break;
+        }
+    }
+    if (isIdentifier)
+        return IDENTIFIER;
+
+    // Default: Unknown type
+    return 0;
 }
 
-int isOperator(char* lexeme) {
-    char arithmeticOperators[][3] = {"+", "-", "*", "/", "%"};
-    char logicalOperators[][3] = {"||", "&&", "!"};
-    char unaryOperators[][3] = {"|", "&"};
-    char incrementOperator[] = "++";
-    char decrementOperator[] = "--";
-    char ternaryOperator[] = "?:";
-    char relationalOperators[][3] = {">", "<", ">=", "<=", "!=", "=="};
-    char assignmentOperators[][4] = {"=", "+=", "-=", "*=", "/=", "%="};
-
-    int numArithmeticOperators = sizeof(arithmeticOperators) / sizeof(arithmeticOperators[0]);
-    int numLogicalOperators = sizeof(logicalOperators) / sizeof(logicalOperators[0]);
-    int numUnaryOperators = sizeof(unaryOperators) / sizeof(unaryOperators[0]);
-    int numRelationalOperators = sizeof(relationalOperators) / sizeof(relationalOperators[0]);
-    int numAssignmentOperators = sizeof(assignmentOperators) / sizeof(assignmentOperators[0]);
-
-    for (int i = 0; i < numArithmeticOperators; i++) {
-        if (strcmp(lexeme, arithmeticOperators[i]) == 0){
-            if (strlen(lexeme) == 2 && lexeme[1] == "=")
-                return 8; // It's an arithmetic operator
-            return 1;
-    }}
-
-    for (int i = 0; i < numLogicalOperators; i++) {
-        if (strcmp(lexeme, logicalOperators[i]) == 0)
-            return 2; // It's a logical operator
+// Function to get the type of operator
+char* getOperatorType(char* token) {
+    // Check for arithmetic operators
+    char arithmeticOps[] = { '+', '-', '*', '/', '%' };
+    int numArithmeticOps = sizeof(arithmeticOps) / sizeof(arithmeticOps[0]);
+    for (int i = 0; i < numArithmeticOps; i++) {
+        if (token[0] == arithmeticOps[i]){
+            if (token[1] == '=')
+                return "Assignment";
+            else if (token[0] == '+' && token[1] == '+')
+                return "Increment";
+            else if (token[0] == '-' && token[1] == '-')
+                return "Decrement";
+            else if (token[1] == NULL)
+                return "Arithmetic";
+        }
     }
 
-    for (int i = 0; i < numUnaryOperators; i++) {
-        if (strcmp(lexeme, unaryOperators[i]) == 0)
-            return 3; // It's a unary operator
+    // Check for logical operators
+    char* logicalOps[] = { "!", "||", "&&" };
+    int numLogicalOps = sizeof(logicalOps) / sizeof(logicalOps[0]);
+    for (int i = 0; i < numLogicalOps; i++) {
+        if (strcmp(token, logicalOps[i]) == 0)
+            return "Logical";
     }
 
-    if (strcmp(lexeme, incrementOperator) == 0)
-        return 4; // It's an increment operator
-
-    if (strcmp(lexeme, decrementOperator) == 0)
-        return 5; // It's a decrement operator
-
-    if (strcmp(lexeme, ternaryOperator) == 0)
-        return 6; // It's a ternary operator
-
-    for (int i = 0; i < numRelationalOperators; i++) {
-        if (strcmp(lexeme, relationalOperators[i]) == 0)
-            return 7; // It's a relational operator
+    // Check for unary operators
+    char* unaryOps[] = { "|", "&" };
+    int numUnaryOps = sizeof(unaryOps) / sizeof(unaryOps[0]);
+    for (int i = 0; i < numUnaryOps; i++) {
+        if (strcmp(token, unaryOps[i]) == 0)
+            return "Unary";
     }
 
-    for (int i = 0; i < numAssignmentOperators; i++) {
-        if (strcmp(lexeme, assignmentOperators[i]) == 0)
-            return 8; // It's an assignment operator
+    // Check for ternary operator
+    if (strcmp(token, "?:") == 0)
+        return "Ternary";
+
+    // Check for relational operators
+    char* relationalOps[] = { ">", "<", ">=", "<=", "!=", "==" };
+    int numRelationalOps = sizeof(relationalOps) / sizeof(relationalOps[0]);
+    for (int i = 0; i < numRelationalOps; i++) {
+        if (strcmp(token, relationalOps[i]) == 0)
+            return "Relational";
     }
 
-    return 0; // It's not an operator
-}
-
-
-void printTokens(Token tokens[], int numTokens) {
-    printf("Serial No.\tLexeme\t\tType\n");
-    printf("-----------------------------------------\n");
-
-    for (int i = 0; i < numTokens; i++) {
-        printf("%d\t\t%s\t\t%s\n", tokens[i].serialNumber,
-               tokens[i].lexeme, tokens[i].type);
+    // Check for assignment operators
+    char* assignmentOps[] = { "=", "+=", "-=", "*=", "/=", "%=" };
+    int numAssignmentOps = sizeof(assignmentOps) / sizeof(assignmentOps[0]);
+    for (int i = 0; i < numAssignmentOps; i++) {
+        if (strcmp(token, assignmentOps[i]) == 0)
+            return "Assignment";
     }
+
+    return "Unknown";
 }
 
 int main() {
-    char input[MAX_LENGTH];
+    char input[500];
     printf("Enter the input: ");
     fgets(input, sizeof(input), stdin);
 
-    int numTokens = 0;
-    Token tokens[MAX_TOKENS];
+    // Tokenize input
+    char* token = strtok(input, " \n\t");
+    int tokenCount = 0;
+    Token tokens[100];
 
-    char* token = strtok(input, " \t\n");
+    // Classify tokens and store in the array
+    while (token != NULL) {
+        Token t;
+        t.serialNumber = tokenCount + 1;
+        strcpy(t.lexeme, token);
+        t.type = classifyToken(token);
+        tokens[tokenCount] = t;
+        tokenCount++;
 
-    while (token != NULL && numTokens < MAX_TOKENS) {
-        if (strcmp(token, "#include") == 0 || strcmp(token, "#define") == 0) {
-            strcpy(tokens[numTokens].lexeme, token);
-            strcpy(tokens[numTokens].type, "Preprocessor Directive");
-            tokens[numTokens].serialNumber = numTokens + 1;
-            numTokens++;
-        } else if (token[0] == '<' && token[strlen(token) - 1] == '>') {
-            strcpy(tokens[numTokens].lexeme, token);
-            strcpy(tokens[numTokens].type, "Header");
-            tokens[numTokens].serialNumber = numTokens + 1;
-            numTokens++;
-        } else {
-            int len = strlen(token);
-            int i = 0;
-
-            while (i < len) {
-                if (isspace(token[i])) {
-                    i++;
-                    continue;
-                } else if (isSeparator(token[i])) {
-                    tokens[numTokens].lexeme[0] = token[i];
-                    tokens[numTokens].lexeme[1] = '\0';
-                    strcpy(tokens[numTokens].type, "Separator");
-                    tokens[numTokens].serialNumber = numTokens + 1;
-                    numTokens++;
-                    i++;
-                } else if (token[i] == '(' || token[i] == ')') {
-                    tokens[numTokens].lexeme[0] = token[i];
-                    tokens[numTokens].lexeme[1] = '\0';
-                    if (token[i]=='('){
-                    strcpy(tokens[numTokens].type, "Left Parenthesis");}
-                    else{
-                    strcpy(tokens[numTokens].type, "Right Parenthesis");}
-                    tokens[numTokens].serialNumber = numTokens + 1;
-                    numTokens++;
-                    i++;
-                } else if (token[i] == '[' || token[i] == ']') {
-                    tokens[numTokens].lexeme[0] = token[i];
-                    tokens[numTokens].lexeme[1] = '\0';
-                    if (token[i]=='[')
-                    strcpy(tokens[numTokens].type, "Left Angle Brace");
-                    else
-                    strcpy(tokens[numTokens].type, "Right Angle Brace");
-                    tokens[numTokens].serialNumber = numTokens + 1;
-                    numTokens++;
-                    i++;
-                } else if (token[i] == '{' || token[i] == '}') {
-                    tokens[numTokens].lexeme[0] = token[i];
-                    tokens[numTokens].lexeme[1] = '\0';
-                    if (token[i]=='{')
-                    strcpy(tokens[numTokens].type, "Left Curly Brace");
-                    else
-                    strcpy(tokens[numTokens].type, "Right Curly Brace");
-                    tokens[numTokens].serialNumber = numTokens + 1;
-                    numTokens++;
-                    i++;
-                } else if (isOperator(token + i) != 0) {
-                    int j = i;
-                    while (j < len && isOperator(token + i) == isOperator(token + j))
-                        j++;
-
-                    strncpy(tokens[numTokens].lexeme, token + i, j - i);
-                    tokens[numTokens].lexeme[j - i] = '\0';
-
-                    if (isKeyword(tokens[numTokens].lexeme)) {
-                        strcpy(tokens[numTokens].type, "Keyword");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 1) {
-                        strcpy(tokens[numTokens].type, "Arithmetic Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 2) {
-                        strcpy(tokens[numTokens].type, "Logical Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 3) {
-                        strcpy(tokens[numTokens].type, "Unary Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 4) {
-                        strcpy(tokens[numTokens].type, "Increment Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 5) {
-                        strcpy(tokens[numTokens].type, "Decrement Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 6) {
-                        strcpy(tokens[numTokens].type, "Ternary Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 7) {
-                        strcpy(tokens[numTokens].type, "Relational Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 8) {
-                        strcpy(tokens[numTokens].type, "Assignment Operator");
-                    } else if (isdigit(tokens[numTokens].lexeme[0]) ||
-                               tokens[numTokens].lexeme[0] == '"' ||
-                               tokens[numTokens].lexeme[0] == '\'') {
-                        strcpy(tokens[numTokens].type, "Literal Constant");
-                    } else {
-                        strcpy(tokens[numTokens].type, "Identifier");
-                    }
-
-                    tokens[numTokens].serialNumber = numTokens + 1;
-                    numTokens++;
-                    i = j;
-                } else {
-                    int j = i;
-                    while (j < len && !isspace(token[j]) &&
-                           !isSeparator(token[j]) &&
-                           token[j] != '(' && token[j] != ')' &&
-                           token[j] != '[' && token[j] != ']' &&
-                           token[j] != '{' && token[j] != '}' &&
-                           isOperator(token + j) == 0)
-                        j++;
-
-                    strncpy(tokens[numTokens].lexeme, token + i, j - i);
-                    tokens[numTokens].lexeme[j - i] = '\0';
-
-                    if (isKeyword(tokens[numTokens].lexeme)) {
-                        strcpy(tokens[numTokens].type, "Keyword");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 1) {
-                        strcpy(tokens[numTokens].type, "Arithmetic Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 2) {
-                        strcpy(tokens[numTokens].type, "Logical Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 3) {
-                        strcpy(tokens[numTokens].type, "Unary Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 4) {
-                        strcpy(tokens[numTokens].type, "Increment Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 5) {
-                        strcpy(tokens[numTokens].type, "Decrement Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 6) {
-                        strcpy(tokens[numTokens].type, "Ternary Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 7) {
-                        strcpy(tokens[numTokens].type, "Relational Operator");
-                    } else if (isOperator(tokens[numTokens].lexeme) == 8) {
-                        strcpy(tokens[numTokens].type, "Assignment Operator");
-                    } else if (isdigit(tokens[numTokens].lexeme[0]) ||
-                               tokens[numTokens].lexeme[0] == '"' ||
-                               tokens[numTokens].lexeme[0] == '\'') {
-                        strcpy(tokens[numTokens].type, "Literal Constant");
-                    } else {
-                        strcpy(tokens[numTokens].type, "Identifier");
-                    }
-
-                    tokens[numTokens].serialNumber = numTokens + 1;
-                    numTokens++;
-                    i = j;
-                }
-            }
-        }
-
-        token = strtok(NULL, " \t\n");
+        token = strtok(NULL, " \n\t");
     }
 
-    printTokens(tokens, numTokens);
+    // Print the tokens with their classification
+    printf("\n--- Token Classification ---\n");
+    printf("Serial No.\tLexeme\t\tToken Type\n");
+    printf("--------------------------------\n");
+    for (int i = 0; i < tokenCount; i++) {
+        Token t = tokens[i];
+        printf("%d\t\t%s\t\t", t.serialNumber, t.lexeme);
+        switch (t.type) {
+            case KEYWORD:
+                printf("Keyword\n");
+                break;
+            case IDENTIFIER:
+                printf("Identifier\n");
+                break;
+            case LITERAL:
+                printf("Literal\n");
+                break;
+            case OPERATOR:
+                printf("Operator - %s\n", getOperatorType(t.lexeme));
+                break;
+            case SEPARATOR:
+                printf("Separator\n");
+                break;
+            default:
+                printf("Unknown\n");
+                break;
+        }
+    }
 
     return 0;
 }
