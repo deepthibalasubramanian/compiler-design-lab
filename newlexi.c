@@ -126,7 +126,9 @@ char* getOperatorType(char* token) {
     char* logicalOps[] = { "!", "||", "&&" };
     int numLogicalOps = sizeof(logicalOps) / sizeof(logicalOps[0]);
     for (int i = 0; i < numLogicalOps; i++) {
-        if (strcmp(token, logicalOps[i]) == 0)
+        if (token[1] == '=')
+            return "Relational";
+        else if (strcmp(token, logicalOps[i]) == 0)
             return "Logical";
     }
 
@@ -162,24 +164,24 @@ char* getOperatorType(char* token) {
 }
 
 char* getSeparatorType(char* token) {
-    char separators[] = { ',', ';', '.', ':', '!', '?', '\'', '\"', '(', ')', '[', ']', '{', '}' };
+    char separators[] = { ',', ';', '.', ':', '?', '\'', '\"', '(', ')', '[', ']', '{', '}' };
     int numSeparators = sizeof(separators) / sizeof(separators[0]);
 
     for (int i = 0; i < numSeparators; i++) {
         if (token[0] == separators[i]) {
-            if (i < 7) {
+            if (i < 6) {
                 return "Punctuation";
-            } else if (i==8){
+            } else if (i==7){
                 return "Left Parenthesis";
-            } else if (i==9){
+            } else if (i==8){
                 return "Right Parenthesis";
-            } else if (i==10){
+            } else if (i==9){
                 return "Left Angle Brace";
-            } else if (i==11){
+            } else if (i==10){
                 return "Right Angle Brace";
-            } else if (i==12){
+            } else if (i==11){
                 return "Left Curly Brace";
-            } else if (i==13){
+            } else if (i==12){
                 return "Right Curly Brace";
             }
         }
@@ -256,7 +258,7 @@ while (i < inputLength) {
             }
         }
     // Check for separators
-    if (strchr(",;.:?!'()[]{}", currentChar) != NULL) {
+    if (strchr(",;.:?'()[]{}", currentChar) != NULL) {
         Token t;
         t.serialNumber = tokenCount + 1;
         t.lexeme[0] = currentChar;
