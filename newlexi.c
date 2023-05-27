@@ -43,24 +43,20 @@ int classifyToken(char* token) {
     }
 
     // Check for separators
-    char separators[] = { ',', ';', '.', ':', '?', '\'', '\"' };
+    char separators[] = { ',', ';', '.', ':', '?', '\'', '\"', '(', ')', '[', ']', '{', '}' };
     int numSeparators = sizeof(separators) / sizeof(separators[0]);
     for (int i = 0; i < numSeparators; i++) {
-        if (token[0] == separators[i]){
-            if (strcmp(token, "?:") == 0)
-                return OPERATOR;
-        }
+        if (token[0] == separators[i]) {
             return SEPARATOR;
+        }
     }
 
-    // Check for parentheses, braces, and brackets
-    if (strlen(token) == 1) {
-        char brackets[] = { '(', ')', '[', ']', '{', '}' };
-        int numBrackets = sizeof(brackets) / sizeof(brackets[0]);
-        for (int i = 0; i < numBrackets; i++) {
-            if (token[0] == brackets[i])
-                return SEPARATOR;
-        }
+    // Check for relational operators
+    char* relationalOps[] = { ">", "<", ">=", "<=", "!=", "==" };
+    int numRelationalOps = sizeof(relationalOps) / sizeof(relationalOps[0]);
+    for (int i = 0; i < numRelationalOps; i++) {
+        if (strcmp(token, relationalOps[i]) == 0)
+            return OPERATOR;
     }
 
     // Check for arithmetic operators
@@ -91,22 +87,6 @@ int classifyToken(char* token) {
     if (strcmp(token, "?:") == 0)
         return OPERATOR;
 
-    // Check for relational operators
-    char* relationalOps[] = { ">", "<", ">=", "<=", "!=", "==" };
-    int numRelationalOps = sizeof(relationalOps) / sizeof(relationalOps[0]);
-    for (int i = 0; i < numRelationalOps; i++) {
-        if (strcmp(token, relationalOps[i]) == 0)
-            return OPERATOR;
-    }
-
-    // Check for assignment operators
-    char* assignmentOps[] = { "=", "+=", "-=", "*=", "/=", "%=" };
-    int numAssignmentOps = sizeof(assignmentOps) / sizeof(assignmentOps[0]);
-    for (int i = 0; i < numAssignmentOps; i++) {
-        if (strcmp(token, assignmentOps[i]) == 0)
-            return OPERATOR;
-    }
-
     // Check for literal constants
     int isLiteral = 1;
     for (int i = 0; i < strlen(token); i++) {
@@ -118,20 +98,10 @@ int classifyToken(char* token) {
     if (isLiteral)
         return LITERAL;
 
-    // Check for identifiers
-    int isIdentifier = isalpha(token[0]) || token[0] == '_';
-    for (int i = 1; i < strlen(token); i++) {
-        if (!isalnum(token[i]) && token[i] != '_') {
-            isIdentifier = 0;
-            break;
-        }
-    }
-    if (isIdentifier)
-        return IDENTIFIER;
-
-    // Default: Unknown type
-    return 0;
+    // Default classification is identifier
+    return IDENTIFIER;
 }
+
 
     
 // Function to get the type of operator
