@@ -126,7 +126,9 @@ char* getOperatorType(char* token) {
     char* logicalOps[] = { "!", "||", "&&" };
     int numLogicalOps = sizeof(logicalOps) / sizeof(logicalOps[0]);
     for (int i = 0; i < numLogicalOps; i++) {
-        if (strcmp(token, logicalOps[i]) == 0)
+        if (token[1] == '=')
+            return "Relational";
+        else if (strcmp(token, logicalOps[i]) == 0)
             return "Logical";
     }
 
@@ -162,24 +164,24 @@ char* getOperatorType(char* token) {
 }
 
 char* getSeparatorType(char* token) {
-    char separators[] = { ',', ';', '.', ':', '!', '?', '\'', '\"', '(', ')', '[', ']', '{', '}' };
+    char separators[] = { ',', ';', '.', ':', '?', '\'', '\"', '(', ')', '[', ']', '{', '}' };
     int numSeparators = sizeof(separators) / sizeof(separators[0]);
 
     for (int i = 0; i < numSeparators; i++) {
         if (token[0] == separators[i]) {
-            if (i < 7) {
+            if (i < 6) {
                 return "Punctuation";
-            } else if (i==8){
+            } else if (i==7){
                 return "Left Parenthesis";
-            } else if (i==9){
+            } else if (i==8){
                 return "Right Parenthesis";
-            } else if (i==10){
+            } else if (i==9){
                 return "Left Angle Brace";
-            } else if (i==11){
+            } else if (i==10){
                 return "Right Angle Brace";
-            } else if (i==12){
+            } else if (i==11){
                 return "Left Curly Brace";
-            } else if (i==13){
+            } else if (i==12){
                 return "Right Curly Brace";
             }
         }
@@ -258,8 +260,32 @@ while (i < inputLength) {
         i = j;  // Move to the next character
         continue;
     }
+            // Check for headers
+        if (currentChar == '<') {
+            int j = i + 1;
+            while (j < inputLength && input[j] != '>') {
+                j++;
+            }
+
+            if (j < inputLength) {
+                int lexemeLength = j - i + 1;
+                char lexeme[lexemeLength + 1];
+                strncpy(lexeme, &input[i], lexemeLength);
+                lexeme[lexemeLength] = '\0';
+
+                Token t;
+                t.serialNumber = tokenCount + 1;
+                strcpy(t.lexeme, lexeme);
+                t.type = HEADER;
+                tokens[tokenCount] = t;
+                tokenCount++;
+
+                i = j + 1;  // Move to the next character
+                continue;
+            }
+        }
     // Check for separators
-    if (strchr(",;.:?!'()[]{}", currentChar) != NULL) {
+    if (strchr(",;.:?'()[]{}", currentChar) != NULL) {
         Token t;
         t.serialNumber = tokenCount + 1;
         t.lexeme[0] = currentChar;
@@ -396,10 +422,10 @@ while (i < inputLength) {
                 printf("Literal\n");
                 break;
             case OPERATOR:
-                printf("Operator - %s\n", getOperatorType(t.lexeme));
+                printf("Operator %s\n", getOperatorType(t.lexeme));
                 break;
             case SEPARATOR:
-                printf("Separator (%s)\n", getSeparatorType(t.lexeme));
+                printf("Separator %s\n", getSeparatorType(t.lexeme));
                 break;
             default:
                 printf("Unknown\n");
