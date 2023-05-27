@@ -9,6 +9,8 @@
 #define LITERAL 3
 #define OPERATOR 4
 #define SEPARATOR 5
+#define PREPROCESSOR 6 
+#define HEADER 7
 
 // Structure to hold token information
 typedef struct {
@@ -21,11 +23,11 @@ typedef struct {
 int classifyToken(char* token) {
     // Check for preprocessor directive
     if (strcmp(token, "#include") == 0 || strcmp(token, "#define") == 0)
-        return KEYWORD;
+        return PREPROCESSOR;
 
     // Check for headers
     if (token[0] == '<' && token[strlen(token) - 1] == '>')
-        return KEYWORD;
+        return HEADER;
 
     // Check for keywords
     char* keywords[] = {
@@ -41,10 +43,13 @@ int classifyToken(char* token) {
     }
 
     // Check for separators
-    char separators[] = { ',', ';', '.', ':', '\'', '\"' };
+    char separators[] = { ',', ';', '.', ':', '?', '\'', '\"' };
     int numSeparators = sizeof(separators) / sizeof(separators[0]);
     for (int i = 0; i < numSeparators; i++) {
-        if (token[0] == separators[i])
+        if (token[0] == separators[i]){
+            if (strcmp(token, "?:") == 0)
+                return OPERATOR;
+        }
             return SEPARATOR;
     }
 
@@ -128,6 +133,7 @@ int classifyToken(char* token) {
     return 0;
 }
 
+    
 // Function to get the type of operator
 char* getOperatorType(char* token) {
     // Check for arithmetic operators
@@ -185,6 +191,33 @@ char* getOperatorType(char* token) {
     return "Unknown";
 }
 
+char* getSeparatorType(char* token) {
+    char separators[] = { ',', ';', '.', ':', '!', '?', '\'', '\"', '(', ')', '[', ']', '{', '}' };
+    int numSeparators = sizeof(separators) / sizeof(separators[0]);
+
+    for (int i = 0; i < numSeparators; i++) {
+        if (token[0] == separators[i]) {
+            if (i < 7) {
+                return "Punctuation";
+            } else if (i==8){
+                return "Left Parenthesis";
+            } else if (i==9){
+                return "Right Parenthesis";
+            } else if (i==10){
+                return "Left Angle Brace";
+            } else if (i==11){
+                return "Right Angle Brace";
+            } else if (i==12){
+                return "Left Curly Brace";
+            } else if (i==13){
+                return "Right Curly Brace";
+            }
+        }
+    }
+
+    return "Unknown";
+}
+
 int main() {
     char input[500];
     printf("Enter the input: ");
@@ -218,6 +251,12 @@ int main() {
             case KEYWORD:
                 printf("Keyword\n");
                 break;
+            case PREPROCESSOR:
+                printf("Preprocessor Directive\n");
+                break;
+            case HEADER:
+                printf("Header\n");
+                break;
             case IDENTIFIER:
                 printf("Identifier\n");
                 break;
@@ -228,7 +267,7 @@ int main() {
                 printf("Operator - %s\n", getOperatorType(t.lexeme));
                 break;
             case SEPARATOR:
-                printf("Separator\n");
+                printf("Separator (%s)\n", getSeparatorType(t.lexeme));
                 break;
             default:
                 printf("Unknown\n");
