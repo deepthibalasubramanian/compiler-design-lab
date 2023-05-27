@@ -395,10 +395,10 @@ while (i < inputLength) {
                 printf("Literal\n");
                 break;
             case OPERATOR:
-                printf("Operator - %s\n", getOperatorType(t.lexeme));
+                printf("Operator %s\n", getOperatorType(t.lexeme));
                 break;
             case SEPARATOR:
-                printf("Separator (%s)\n", getSeparatorType(t.lexeme));
+                printf("Separator %s\n", getSeparatorType(t.lexeme));
                 break;
             default:
                 printf("Unknown\n");
