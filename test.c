@@ -99,8 +99,6 @@ int classifyToken(char* token) {
     return IDENTIFIER;
 }
 
-
-    
 // Function to get the type of operator
 char* getOperatorType(char* token) {
     // Check for arithmetic operators
@@ -190,23 +188,108 @@ int main() {
     printf("Enter the input: ");
     fgets(input, sizeof(input), stdin);
     input[strcspn(input, "\n")] = '\0';  // Remove trailing newline
+    
     // Tokenize input
-    char* token = strtok(input, " \n\t\"'");
+    int inputLength = strlen(input);
     int tokenCount = 0;
     Token tokens[100];
 
-    // Classify tokens and store in the array
-    while (token != NULL) {
-        Token t;
-        t.serialNumber = tokenCount + 1;
-        strcpy(t.lexeme, token);
-        t.type = classifyToken(token);
-        tokens[tokenCount] = t;
-        tokenCount++;
+    // Iterate through the input character by character
+    int i = 0;
+    while (i < inputLength) {
+        char currentChar = input[i];
 
-        token = strtok(NULL, " \n\t\"'");
+        // Check for whitespace characters
+        if (isspace(currentChar)) {
+            i++;  // Move to the next character
+            continue;
+        }
+
+        // Check for separators
+        if (strchr(",;.:?!'\"()[]{}", currentChar) != NULL) {
+            Token t;
+            t.serialNumber = tokenCount + 1;
+            t.lexeme[0] = currentChar;
+            t.lexeme[1] = '\0';
+            t.type = SEPARATOR;
+            tokens[tokenCount] = t;
+            tokenCount++;
+            i++;  // Move to the next character
+            continue;
+        }
+
+        // Check for keywords
+        if (isalpha(currentChar)) {
+            int j = i + 1;
+            while (j < inputLength && isalpha(input[j])) {
+                j++;
+            }
+
+            int lexemeLength = j - i;
+            char lexeme[lexemeLength + 1];
+            strncpy(lexeme, &input[i], lexemeLength);
+            lexeme[lexemeLength] = '\0';
+
+            Token t;
+            t.serialNumber = tokenCount + 1;
+            strcpy(t.lexeme, lexeme);
+            t.type = classifyToken(lexeme);
+            tokens[tokenCount] = t;
+            tokenCount++;
+
+            i = j;  // Move to the next character
+            continue;
+        }
+
+        // Check for numeric literals
+        if (isdigit(currentChar)) {
+            int j = i + 1;
+            while (j < inputLength && (isdigit(input[j]) || input[j] == '.')) {
+                j++;
+            }
+
+            int lexemeLength = j - i;
+            char lexeme[lexemeLength + 1];
+            strncpy(lexeme, &input[i], lexemeLength);
+            lexeme[lexemeLength] = '\0';
+
+            Token t;
+            t.serialNumber = tokenCount + 1;
+            strcpy(t.lexeme, lexeme);
+            t.type = LITERAL;
+            tokens[tokenCount] = t;
+            tokenCount++;
+
+            i = j;  // Move to the next character
+            continue;
+        }
+
+        // Check for other operators
+        if (strchr("+-*/%<>=!&|", currentChar) != NULL) {
+            int j = i + 1;
+            while (j < inputLength && strchr("+-*/%<>=!&|", input[j]) != NULL) {
+                j++;
+            }
+
+            int lexemeLength = j - i;
+            char lexeme[lexemeLength + 1];
+            strncpy(lexeme, &input[i], lexemeLength);
+            lexeme[lexemeLength] = '\0';
+
+            Token t;
+            t.serialNumber = tokenCount + 1;
+            strcpy(t.lexeme, lexeme);
+            t.type = OPERATOR;
+            tokens[tokenCount] = t;
+            tokenCount++;
+
+            i = j;  // Move to the next character
+            continue;
+        }
+
+        // Move to the next character if none of the above conditions are satisfied
+        i++;
     }
-
     // Print the tokens with their classification
     printf("\n--- Token Classification ---\n");
     printf("Serial No.\tLexeme\t\tToken Type\n");
