@@ -30,8 +30,9 @@ int main(){
 	
 	//find the first of every non terminal in the grammar
 	for ( int i = 0 ; i < 7 ; i++ ) {
+		for ( int k = 0 ; test
 		char test[100] = arr[0];
-		for ( int j = 3 ; j != '\0' ; j++ ) {
+		for ( int j = 3 ; test[j] != '\0' ; j++ ) {
 			if (test[j].isalpha()){
 				if(test[j].islower()){
 					first[i]=test[j];
