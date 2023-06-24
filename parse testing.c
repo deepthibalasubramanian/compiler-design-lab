@@ -40,8 +40,8 @@ void getParseTable(int nonTerminalsLength,int terminalsLength) {
     int i, j;
     char entry[MAX_SYMBOL];
     printf("Enter the parse table entries:\n");
-    for (i = 0; i < terminalsLength; i++) {
-        for (j = 0; j < nonTerminalsLength; j++) {
+    for (i = 0; i < nonTerminalsLength; i++) {
+        for (j = 0; j < terminalsLength; j++) {
             printf("Entry [%s, %s]: ", nonTerminals[i], terminals[j]);
             scanf("%s", entry);
             if (strcmp(entry, "NULL") == 0) {
@@ -107,9 +107,7 @@ int main() {
         i++;
         token = strtok(NULL, ",");
     }
-    //int nonTerminalsLength = sizeof(nonTerminals) / sizeof(nonTerminals[0]);
-	//int terminalsLength = sizeof(terminals) / sizeof(terminals[0]);
-
+    
     initializeParseTable();
     getParseTable(ntcount,tercount);
     displayParseTable();
