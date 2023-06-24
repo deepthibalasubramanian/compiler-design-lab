@@ -22,23 +22,46 @@ void splitProduction(char input[], char lhs[], char rhs[]) {
     }
 }
 
-void acceptProductions(Production productions[], int n) {
-    printf("Enter the grammar productions:\n");
-    
+void acceptProductions(Production productions[], int n);
+
+int isTerminal(char symbol) {
+    return !(symbol >= 'A' && symbol <= 'Z');
+}
+
+void findFirstSet(char nonTerminal, Production productions[], int n, char firstSet[]) {
     for (int i = 0; i < n; i++) {
-        char input[MAX_LENGTH];
-        printf("Production %d: ", i + 1);
-        scanf("%s", input);
-        
-        splitProduction(input, productions[i].lhs, productions[i].rhs);
+        if (productions[i].lhs[0] == nonTerminal) {
+            if (isTerminal(productions[i].rhs[0])) {
+                // First set contains the terminal symbol
+                firstSet[strlen(firstSet)] = productions[i].rhs[0];
+                firstSet[strlen(firstSet)] = '\0';
+            } else {
+                // Recursively find FIRST set for non-terminal symbol
+                findFirstSet(productions[i].rhs[0], productions, n, firstSet);
+            }
+        }
     }
 }
 
-void displayProductions(Production productions[], int n) {
-    printf("\nGrammar Productions:\n");
-    
+void calculateFirstSets(Production productions[], int n, char firstSets[][MAX_LENGTH]) {
     for (int i = 0; i < n; i++) {
-        printf("%s -> %s\n", productions[i].lhs, productions[i].rhs);
+        char nonTerminal = productions[i].lhs[0];
+        char firstSet[MAX_LENGTH] = "";
+
+        findFirstSet(nonTerminal, productions, n, firstSet);
+
+        // Copy the FIRST set to the result array
+        strcpy(firstSets[nonTerminal - 'A'], firstSet);
+    }
+}
+
+void displayFirstSets(char firstSets[][MAX_LENGTH]) {
+    printf("\nFIRST Sets:\n");
+    
+    for (int i = 0; i < 26; i++) {
+        if (strlen(firstSets[i]) > 0) {
+            printf("FIRST(%c) = {%s}\n", 'A' + i, firstSets[i]);
+        }
     }
 }
 
@@ -53,8 +76,26 @@ int main() {
     }
 
     Production productions[MAX_PRODUCTIONS];
+    char firstSets[26][MAX_LENGTH];
+    for (int i = 0; i < 26; i++) {
+        strcpy(firstSets[i], "");
+    }
+
     acceptProductions(productions, n);
-    displayProductions(productions, n);
+    calculateFirstSets(productions, n, firstSets);
+    displayFirstSets(firstSets);
 
     return 0;
+}
+
+void acceptProductions(Production productions[], int n) {
+    printf("Enter the grammar productions:\n");
+    
+    for (int i = 0; i < n; i++) {
+        char input[MAX_LENGTH];
+        printf("Production %d: ", i + 1);
+        scanf("%s", input);
+        
+        splitProduction(input, productions[i].lhs, productions[i].rhs);
+    }
 }
