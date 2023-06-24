@@ -3,10 +3,10 @@
 #include <stdlib.h>
 
 #define MAX_PROD 10
-#define MAX_SYMBOL 15
-#define MAX_ROW 10
+#define MAX_SYMBOL 10
+#define MAX_ROW 6
 #define MAX_COL 10
-#define MAX_INPUT 20
+#define MAX_INPUT 10
 
 char prod[MAX_PROD][MAX_SYMBOL];
 char table[MAX_ROW][MAX_COL][MAX_SYMBOL];
@@ -20,7 +20,7 @@ void display(int i, int j) {
     int k;
     for (k = 0; k <= i; k++)
         printf("%c", stack[k]);
-    printf(" ");
+    printf(" \t\t ");
     for (k = j; k <= n; k++)
         printf("%c", s[k]);
     printf("\n");
@@ -120,14 +120,13 @@ int main() {
     stack[1] = nonTerminals[0][0];
     i = 1;
     j = 0;
-    printf("\nStack input:\n");
+    printf("\nStack operations:\n");
     while (1) {
         if (stack[i] == s[j]) {
             i--;
             j++;
             if (stack[i] == '$' && s[j] == '$') {
-                printf("%c %c\n", stack[i], s[j]);
-                printf("SUCCESS\n");
+                printf("SUCCESS, String parsed and accepted.\n");
                 break;
             } else if (stack[i] == '$' && s[j] != '$') {
                 printf("Error\n");
