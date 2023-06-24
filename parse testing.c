@@ -36,7 +36,7 @@ void initializeParseTable() {
     }
 }
 
-void getParseTable(int nonTerminalsLength,int terminalsLength) {
+void getParseTable(int nonTerminalsLength, int terminalsLength) {
     int i, j;
     char entry[MAX_SYMBOL];
     printf("Enter the parse table entries:\n");
@@ -87,7 +87,7 @@ int main() {
     scanf("%s", nonTerminalInput);
     char* token = strtok(nonTerminalInput, ",");
     i = 0;
-    int ntcount=0;
+    int ntcount = 0;
     while (token != NULL && i < MAX_ROW) {
         strcpy(nonTerminals[i], token);
         ntcount++;
@@ -100,16 +100,16 @@ int main() {
     scanf("%s", terminalInput);
     token = strtok(terminalInput, ",");
     i = 0;
-    int tercount=0;
+    int tercount = 0;
     while (token != NULL && i < MAX_COL) {
         strcpy(terminals[i], token);
         tercount++;
         i++;
         token = strtok(NULL, ",");
     }
-    
+
     initializeParseTable();
-    getParseTable(ntcount,tercount);
+    getParseTable(ntcount, tercount);
     displayParseTable();
 
     printf("Enter the string: ");
@@ -134,32 +134,33 @@ int main() {
                 break;
             }
             display(i, j);
-        }
-        for (row = 0; row < MAX_ROW; row++) {
-            if (stack[i] == nonTerminals[row][0])
-                break;
-        }
-        for (col = 0; col < MAX_COL; col++) {
-            if (s[j] == terminals[col][0])
-                break;
-        }
-        if (row == MAX_ROW || col == MAX_COL) {
-            printf("\nError\n");
-            break;
-        }
-        if (table[row][col][0] == '\0') {
-            printf("\nError\n");
-            break;
-        } else if (table[row][col][0] == 'e') {
-            i--;
-            display(i, j);
         } else {
-            for (k = size[row][col] - 1; k >= 0; k--) {
-                stack[i] = table[row][col][k];
-                i++;
+            for (row = 0; row < MAX_ROW; row++) {
+                if (stack[i] == nonTerminals[row][0])
+                    break;
             }
-            i--;
-            display(i, j);
+            for (col = 0; col < MAX_COL; col++) {
+                if (s[j] == terminals[col][0])
+                    break;
+            }
+            if (row == MAX_ROW || col == MAX_COL) {
+                printf("\nError\n");
+                break;
+            }
+            if (table[row][col][0] == '\0') {
+                printf("\nError\n");
+                break;
+            } else if (strcmp(table[row][col], "e") == 0) {
+                i--;
+                display(i, j);
+            } else {
+                for (k = size[row][col] - 1; k >= 0; k--) {
+                    stack[i] = table[row][col][k];
+                    i++;
+                }
+                i--;
+                display(i, j);
+            }
         }
     }
     return 0;
